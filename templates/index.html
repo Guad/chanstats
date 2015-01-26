@@ -1,0 +1,111 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="static/skeleton.css">
+    <title>/pol/ Country Stats</title>
+    <link rel="shortcut icon" type="image/ico" href="../static/favicon.ico"/>
+
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Country', 'Unique Posts'],
+          {% if countries %}
+            {{ countries|safe }}
+          {% endif %}
+        ]);
+
+        var options = {
+          title: 'Number of Countrymen on /pol/',
+          pieStartAngle: 180
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('google-piechart'));
+
+        chart.draw(data, options);
+      }
+    </script>
+
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["geochart"]});
+      google.setOnLoadCallback(drawRegionsMap);
+
+      function drawRegionsMap() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Country', 'Unique Posters'],
+          {% if countries %}
+            {{ countries|safe }}
+          {% endif %}
+        ]);
+        var options = {};
+        var chart = new google.visualization.GeoChart(document.getElementById('google-world'));
+        chart.draw(data, options);
+      }
+    </script>
+
+    <style>
+    .our-grid {
+      background: none repeat scroll 0% 0% #EEE;
+      text-align: center;
+      border-radius: 4px;
+      font-size: 1.75rem;
+      text-transform: uppercase;
+      height: 30px;
+      line-height: 30px;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.1rem;
+
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Country Stats on /pol/</h1>
+      {% if time %}
+      <h4>
+        Last updated: {{time[2]}}/{{time[1]}}/{{time[0]}} at {{time[3]}}:{{time[4]}}:{{time[5]}} local time.
+      </h4>
+      <h6>
+        Updated every 30 minutes.
+      </h6>
+      {% endif %}
+      <div class="our-grid">
+        <div class="row" id="world">
+          <div class="twelve columns" >
+            World Map <a href="{{url_for('index')}}#world"><img src="../static/link.svg" style="max-width: 1.2%; max-height: 1.2%;" /></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="twelve columns">
+          <div id="google-world" style="width: 100%; height: 100%;"></div>
+        </div>
+      </div>
+
+      <div class="our-grid">
+        <div class="row" id="piechart">
+          <div class="twelve columns" >
+            Pie Chart <a href="{{url_for('index')}}#piechart"><img src="../static/link.svg" style="max-width: 1.2%; max-height: 1.2%;" /></a>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="twelve columns">
+            <div id="google-piechart" style="width: 100%; height: 100%;"></div>
+        </div>
+      </div>
+
+
+      <div class="row">
+        <div class="twelve columns">
+            <h6>Made by anon (c) 2015</h6>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
