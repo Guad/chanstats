@@ -35,5 +35,5 @@ def index():
 	return flask.render_template('index.html', countries=fetch[1], time=fetch[0])
 
 if __name__ == '__main__':
-	#app.debug = True #DONT FORGET --------------------------------------------------------------------------
+	#app.debug = True #DONT FORGET
 	app.run() #Run our app.
