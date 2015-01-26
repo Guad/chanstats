@@ -26,7 +26,7 @@ def updateStats():
 	print 'Updating stats...'
 	chanapi.updateStatsOnBoard('pol')
 	print 'Update complete!'
-	Timer(1800, updateStats, ()).start() # DEBUG!!!
+	Timer(1800, updateStats, ()).start()
 updateStats()
 
 @app.route('/')
@@ -35,5 +35,5 @@ def index():
 	return flask.render_template('index.html', countries=fetch[1], time=fetch[0])
 
 if __name__ == '__main__':
-	app.debug = True #DONT FORGET --------------------------------------------------------------------------
+	#app.debug = True #DONT FORGET --------------------------------------------------------------------------
 	app.run() #Run our app.

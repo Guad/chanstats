@@ -40,7 +40,9 @@
             {{ countries|safe }}
           {% endif %}
         ]);
-        var options = {};
+        var options = {
+         
+        };
         var chart = new google.visualization.GeoChart(document.getElementById('google-world'));
         chart.draw(data, options);
       }
