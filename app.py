@@ -34,6 +34,8 @@ def getLatestCountryStats():
 			output.append(timeline[-48:])
 		else:
 			output.append(timeline)
+	with open('static/words.txt', 'r') as statfile:
+		output.append(statfile.read())
 	return output
 
 def makeLineChart(data):
@@ -44,6 +46,7 @@ def makeLineChart(data):
 		finalString += ',\n'
 	finalString += ']'
 	return finalString
+
 def updateStats():
 	print 'Updating stats...'
 	chanapi.updateStatsOnBoard('pol')
@@ -55,8 +58,8 @@ Timer(5, updateStats, ()).start()
 def index():
 	fetch = getLatestCountryStats()
 	linechart = makeLineChart(fetch[2])
-	return flask.render_template('index.html', countries=fetch[1], time=fetch[0], linechart=linechart)
+	return flask.render_template('index.html', countries=fetch[1], time=fetch[0], linechart=linechart, words=fetch[3])
 
 if __name__ == '__main__':
-	#app.debug = True #DONT FORGET
+	app.debug = True #DONT FORGET
 	app.run() #Run our app.

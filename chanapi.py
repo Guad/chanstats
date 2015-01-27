@@ -2,6 +2,7 @@ import urllib2
 import time
 import operator
 from time import strftime
+from flask import Markup
 
 false = False #JSON Compatibility
 true = True
@@ -13,7 +14,7 @@ hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML,
 	'Connection': 'keep-alive'}
 
 def saveStats(stats):
-	sortedStats = sorted(stats.items(), key=operator.itemgetter(1))
+	sortedStats = sorted(stats[0].items(), key=operator.itemgetter(1))
 	sortedStats.reverse()
 	currentDate = strftime("%d/%m/%Y %H:%M")
 	with open('static/stats.txt', 'w') as statfile:
@@ -25,13 +26,17 @@ def saveStats(stats):
 		listOut = []
 		listOut.append(currentDate)
 		listOut.append({
-						"United States":stats['United States'],
-						"United Kingdom":stats['United Kingdom'],
-						"Canada":stats['Canada'],
-						"Australia":stats['Australia'],
-						"Germany":stats['Germany'],
+						"United States":stats[0]['United States'],
+						"United Kingdom":stats[0]['United Kingdom'],
+						"Canada":stats[0]['Canada'],
+						"Australia":stats[0]['Australia'],
+						"Germany":stats[0]['Germany'],
 						})
 		hourperiod.write(str(listOut) + '\n')
+
+	with open('static/words.txt', 'w') as wordlist:
+		for pair in stats[1]:
+			wordlist.write( "[\'%s\', \'%s\' ],\n" % (pair, stats[1][pair]) )
 
 def getBoardThreads(board):
 	url = 'http://a.4cdn.org/%s/threads.json' % board
@@ -55,8 +60,10 @@ def getBoardThreads(board):
 
 def countUniqueBoardCountries(board):
 	threads = getBoardThreads(board)
-	uniquePersonalities = []
+	uniquePersonalities = [] #IDs
 	uniqueCountries = {}
+
+	shitposts = {} # {"Country":['ops a fag', 'lyl']}
 	for thread in threads:
 		url = 'http://a.4cdn.org/%s/thread/%s.json' % (board, str(thread))
 		req = urllib2.Request(url, headers=hdr)
@@ -67,6 +74,15 @@ def countUniqueBoardCountries(board):
 		#Inside each post, post stats.
 		for post in mainJSON['posts']:
 			try:
+				shitp = Markup(post['com']).striptags()
+				shitp = "".join(shitp.split("\'"))
+				if post['country_name'] in shitposts:
+					shitposts[post['country_name']].append(shitp)
+				else:
+					shitposts[post['country_name']] = [shitp]
+			except KeyError: #Empty post
+				pass
+			try:
 				if not post['id'] in uniquePersonalities:
 					uniquePersonalities.append(post['id'])
 					if post['country_name'] in uniqueCountries:
@@ -76,7 +92,25 @@ def countUniqueBoardCountries(board):
 			except KeyError:
 				pass
 		time.sleep(0.1)
-	return uniqueCountries
+	return [uniqueCountries, shitposts]
+
+def getMostUsedWord(shitposts):
+	mostUsed = {}
+	for country in shitposts:
+		wordList = {}
+		for post in shitposts[country]:
+			post = post.split()
+			for word in post:
+				if len(word) >= 5 and not word in ['about', 'people', 'their', 'still', 'would', 'there', 'because', 'never', 'believe', 'never', 'least']: #boring words
+					if word in wordList:
+						wordList[word] += 1
+					else:
+						wordList[word] = 1
+		mostUsed[country] = max(wordList.iteritems(), key=operator.itemgetter(1))[0]
+	return mostUsed
 
 def updateStatsOnBoard(board):
-	saveStats(countUniqueBoardCountries(board))
+	getData = countUniqueBoardCountries(board)
+	fileInput = [getData[0]]
+	fileInput.append(getMostUsedWord(getData[1]))
+	saveStats(fileInput)
