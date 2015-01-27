@@ -80,6 +80,3 @@ def countUniqueBoardCountries(board):
 
 def updateStatsOnBoard(board):
 	saveStats(countUniqueBoardCountries(board))
-
-if __name__ == '__main__':
-	updateStatsOnBoard('pol')

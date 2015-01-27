@@ -58,5 +58,5 @@ def index():
 	return flask.render_template('index.html', countries=fetch[1], time=fetch[0], linechart=linechart)
 
 if __name__ == '__main__':
-	app.debug = True #DONT FORGET
+	#app.debug = True #DONT FORGET
 	app.run() #Run our app.
