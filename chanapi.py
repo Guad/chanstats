@@ -15,10 +15,23 @@ hdr = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML,
 def saveStats(stats):
 	sortedStats = sorted(stats.items(), key=operator.itemgetter(1))
 	sortedStats.reverse()
+	currentDate = strftime("%d/%m/%Y %H:%M")
 	with open('static/stats.txt', 'w') as statfile:
-		statfile.write(strftime("%Y-%m-%d-%H-%M-%S") + '\n')
+		statfile.write(currentDate + '\n')
 		for n in sortedStats:
 			statfile.write( "[\'" + str(n[0]) + "\', " + str(n[1]) + "],\n" )
+
+	with open('static/24hour.txt', 'a') as hourperiod:
+		listOut = []
+		listOut.append(currentDate)
+		listOut.append({
+						"United States":stats['United States'],
+						"United Kingdom":stats['United Kingdom'],
+						"Canada":stats['Canada'],
+						"Australia":stats['Australia'],
+						"Germany":stats['Germany'],
+						})
+		hourperiod.write(str(listOut) + '\n')
 
 def getBoardThreads(board):
 	url = 'http://a.4cdn.org/%s/threads.json' % board
