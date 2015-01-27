@@ -3,6 +3,7 @@ import time
 import operator
 from time import strftime
 from flask import Markup
+from copy import deepcopy
 
 false = False #JSON Compatibility
 true = True
@@ -20,8 +21,9 @@ def saveStats(stats):
 	with open('static/stats.txt', 'w') as statfile:
 		statfile.write(currentDate + '\n')
 		for n in sortedStats:
-			statfile.write( "[\'" + str(n[0]) + "\', " + str(n[1]) + "],\n" )
-
+			country = "".join(str(n[0]).split("'"))
+			times = str(n[1])
+			statfile.write( '[\"%s\", %s],\n' % (country, times) )
 	with open('static/24hour.txt', 'a') as hourperiod:
 		listOut = []
 		listOut.append(currentDate)
@@ -36,7 +38,14 @@ def saveStats(stats):
 
 	with open('static/words.txt', 'w') as wordlist:
 		for pair in stats[1]:
-			wordlist.write( "[\'%s\', \'%s\' ],\n" % (pair, stats[1][pair]) )
+			country = "".join(str(pair).split("'"))
+			wordlist.write( "[\'%s\', \'%s\' ],\n" % (country, stats[1][pair]) )
+
+	with open('static/polwords.txt', 'w') as wordlist:
+		wordlist.write(str(stats[2][0]) + '\n')
+		for n, pair in enumerate(stats[2][1]):
+			wordlist.write("data.setValue(%i, 0, '%s');\n" % (n, pair))
+			wordlist.write("data.setValue(%i, 1, '%s');\n" % (n, stats[2][1][pair]))
 
 def getBoardThreads(board):
 	url = 'http://a.4cdn.org/%s/threads.json' % board
@@ -64,6 +73,7 @@ def countUniqueBoardCountries(board):
 	uniqueCountries = {}
 
 	shitposts = {} # {"Country":['ops a fag', 'lyl']}
+	fullShitpostList = []
 	for thread in threads:
 		url = 'http://a.4cdn.org/%s/thread/%s.json' % (board, str(thread))
 		req = urllib2.Request(url, headers=hdr)
@@ -76,6 +86,7 @@ def countUniqueBoardCountries(board):
 			try:
 				shitp = Markup(post['com']).striptags()
 				shitp = "".join(shitp.split("\'"))
+				fullShitpostList.append(shitp)
 				if post['country_name'] in shitposts:
 					shitposts[post['country_name']].append(shitp)
 				else:
@@ -92,7 +103,26 @@ def countUniqueBoardCountries(board):
 			except KeyError:
 				pass
 		time.sleep(0.1)
-	return [uniqueCountries, shitposts]
+	return [uniqueCountries, shitposts, fullShitpostList]
+
+def generateWordCloud(data):
+	size = len(data)
+	wordList = {}
+	for post in data:
+			post = post.split()
+			for word in post:
+				boringWords = ['about', 'people', 'their', 'still', 'would', 'there', 'because', 'never', 'believe', 'never', 'least']
+				if len(word) >= 5 and not word in boringWords: #boring words
+					if word in wordList:
+						wordList[word] += 1
+					else:
+						wordList[word] = 1
+	cloneDict = deepcopy(wordList)
+	for word in cloneDict:
+		if cloneDict[word] <= 40:
+			wordList.pop(word, None)
+	cloneDict = None
+	return [size,wordList]
 
 def getMostUsedWord(shitposts):
 	mostUsed = {}
@@ -101,7 +131,8 @@ def getMostUsedWord(shitposts):
 		for post in shitposts[country]:
 			post = post.split()
 			for word in post:
-				if len(word) >= 5 and not word in ['about', 'people', 'their', 'still', 'would', 'there', 'because', 'never', 'believe', 'never', 'least']: #boring words
+				boringWords = ['about', 'people', 'their', 'still', 'would', 'there', 'because', 'never', 'believe', 'never', 'least']
+				if len(word) >= 5 and not word in boringWords: #boring words
 					if word in wordList:
 						wordList[word] += 1
 					else:
@@ -113,4 +144,5 @@ def updateStatsOnBoard(board):
 	getData = countUniqueBoardCountries(board)
 	fileInput = [getData[0]]
 	fileInput.append(getMostUsedWord(getData[1]))
+	fileInput.append(generateWordCloud(getData[2]))
 	saveStats(fileInput)

@@ -13,6 +13,7 @@ if not 'SECRET_KEY' in environ:
 			config[line[0]] = line[1]
 else:
 	config['SECRET_KEY'] = environ['SECRET_KEY']
+	config['PASSWORD'] = environ['PASSWORD']
 
 app = flask.Flask(__name__) #Initialize our application
 app.secret_key = config['SECRET_KEY']
@@ -36,6 +37,9 @@ def getLatestCountryStats():
 			output.append(timeline)
 	with open('static/words.txt', 'r') as statfile:
 		output.append(statfile.read())
+
+	with open('static/polwords.txt', 'r') as statfile:
+		output.append([statfile.readline().rstrip(),statfile.read()])
 	return output
 
 def makeLineChart(data):
@@ -58,8 +62,20 @@ Timer(5, updateStats, ()).start()
 def index():
 	fetch = getLatestCountryStats()
 	linechart = makeLineChart(fetch[2])
-	return flask.render_template('index.html', countries=fetch[1], time=fetch[0], linechart=linechart, words=fetch[3])
+	return flask.render_template('index.html', countries=fetch[1], time=fetch[0], linechart=linechart, words=fetch[3], polwords=fetch[4])
 
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+	if flask.request.method == 'POST':
+		userinput = flask.request.form['mainarea']
+		userpassword = flask.request.form['pass']
+		if userpassword == config['PASSWORD']:
+			with open('static/24hour.txt', 'w') as placementFile:
+				placementFile.write(userinput)
+				return flask.redirect(flask.url_for('admin'))
+	else:
+		with open('static/24hour.txt', 'r') as placementFile:
+			return flask.render_template('admin.html', textarea=placementFile.read())
 if __name__ == '__main__':
-	app.debug = True #DONT FORGET
+	#app.debug = True #DONT FORGET
 	app.run() #Run our app.
