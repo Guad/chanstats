@@ -56,8 +56,10 @@ def updateStats():
 	chanapi.updateStatsOnBoard('pol')
 	print 'Update complete!'
 	Timer(1800, updateStats, ()).start()
-updateStats()
 
+def startTimer():
+	updateStats()
+Timer(5, startTimer, ()).start()
 @app.route('/')
 def index():
 	fetch = getLatestCountryStats()
