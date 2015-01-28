@@ -4,6 +4,7 @@ from time import strftime
 from threading import Timer
 from os import environ
 from waitress import serve
+from sys import argv
 
 #Load config file
 config = {}
