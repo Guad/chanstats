@@ -3,6 +3,7 @@ import chanapi
 from time import strftime
 from threading import Timer
 from os import environ
+from waitress import serve
 
 #Load config file
 config = {}
@@ -14,6 +15,7 @@ if not 'SECRET_KEY' in environ:
 else:
 	config['SECRET_KEY'] = environ['SECRET_KEY']
 	config['PASSWORD'] = environ['PASSWORD']
+	config['PORT'] = environ['PORT']
 
 app = flask.Flask(__name__) #Initialize our application
 app.secret_key = config['SECRET_KEY']
@@ -56,10 +58,7 @@ def updateStats():
 	chanapi.updateStatsOnBoard('pol')
 	print 'Update complete!'
 	Timer(180, updateStats, ()).start()
-updateStats()
-def startTimer():
-	updateStats()
-#Timer(5, startTimer, ()).start()
+Timer(5, updateStats, ()).start()
 
 @app.route('/')
 def index():
@@ -81,4 +80,5 @@ def admin():
 			return flask.render_template('admin.html', textarea=placementFile.read())
 if __name__ == '__main__':
 	app.debug = True #DONT FORGET
-	app.run() #Run our app.
+	serve(app, port=int(config['PORT']))
+	#app.run() #Run our app.
