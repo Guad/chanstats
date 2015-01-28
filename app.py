@@ -55,11 +55,12 @@ def updateStats():
 	print 'Updating stats...'
 	chanapi.updateStatsOnBoard('pol')
 	print 'Update complete!'
-	Timer(1800, updateStats, ()).start()
-
+	Timer(180, updateStats, ()).start()
+updateStats()
 def startTimer():
 	updateStats()
-Timer(5, startTimer, ()).start()
+#Timer(5, startTimer, ()).start()
+
 @app.route('/')
 def index():
 	fetch = getLatestCountryStats()
@@ -79,5 +80,5 @@ def admin():
 		with open('static/24hour.txt', 'r') as placementFile:
 			return flask.render_template('admin.html', textarea=placementFile.read())
 if __name__ == '__main__':
-	#app.debug = True #DONT FORGET
+	app.debug = True #DONT FORGET
 	app.run() #Run our app.
