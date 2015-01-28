@@ -55,8 +55,8 @@ def updateStats():
 	print 'Updating stats...'
 	chanapi.updateStatsOnBoard('pol')
 	print 'Update complete!'
-	Timer(1800, updateStats, ()).start()
-Timer(5, updateStats, ()).start()
+	Timer(180, updateStats, ()).start()
+updateStats()
 
 @app.route('/')
 def index():
